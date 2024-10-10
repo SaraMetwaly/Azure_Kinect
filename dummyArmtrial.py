@@ -1,8 +1,8 @@
 from pyk4a import PyK4A, Config, ColorResolution, DepthMode
-import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import math
+import cv2
 
 # Function to calculate angle between two lines formed by points
 def calculate_angle(p1, p2, p3, p4):

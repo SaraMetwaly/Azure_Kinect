@@ -27,8 +27,14 @@ contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 # Function to extract 3D coordinates (x, y, z) from the depth image
 def get_3d_coordinates(depth_image, x, y):
-    z = depth_image[y, x]  # Depth value (z-axis)
-    return np.array([x, y, z])
+    height, width = depth_image.shape
+    # Ensure that x and y are within bounds
+    if 0 <= x < width and 0 <= y < height:
+        z = depth_image[y, x]  # Depth value (z-axis)
+        return np.array([x, y, z])
+    else:
+        print(f"Coordinates ({x}, {y}) are out of bounds.")
+        return None
 
 # Check if we detected at least two objects (two largest contours)
 if len(contours) >= 2:
@@ -54,20 +60,24 @@ if len(contours) >= 2:
         object1_coords = get_3d_coordinates(depth_image, *object1_centroid)
         object2_coords = get_3d_coordinates(depth_image, *object2_centroid)
 
-        # Compute the vector between the two objects
-        vector1 = object1_coords
-        vector2 = object2_coords
+        # Only proceed if valid coordinates are returned
+        if object1_coords is not None and object2_coords is not None:
+            # Compute the vector between the two objects
+            vector1 = object1_coords
+            vector2 = object2_coords
 
-        # Compute the angle between the vectors
-        dot_product = np.dot(vector1, vector2)
-        magnitude1 = np.linalg.norm(vector1)
-        magnitude2 = np.linalg.norm(vector2)
+            # Compute the angle between the vectors
+            dot_product = np.dot(vector1, vector2)
+            magnitude1 = np.linalg.norm(vector1)
+            magnitude2 = np.linalg.norm(vector2)
 
-        # Calculate the angle in radians, then convert to degrees
-        angle_radians = np.arccos(dot_product / (magnitude1 * magnitude2))
-        angle_degrees = np.degrees(angle_radians)
+            # Calculate the angle in radians, then convert to degrees
+            angle_radians = np.arccos(dot_product / (magnitude1 * magnitude2))
+            angle_degrees = np.degrees(angle_radians)
 
-        print(f"Angle between objects: {angle_degrees:.2f} degrees")
+            print(f"Angle between objects: {angle_degrees:.2f} degrees")
+        else:
+            print("Invalid coordinates for one or both objects.")
     else:
         print("Unable to find centroids for both objects.")
 else:
